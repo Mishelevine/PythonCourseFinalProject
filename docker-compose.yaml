@@ -1,0 +1,21 @@
+services:
+  db_init:
+    build: .
+    command: ["alembic", "upgrade", "head"]
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    restart: "no"
+  api:
+    build: .
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      db_init:
+        condition: service_completed_successfully
+
