@@ -18,6 +18,7 @@ async_session_factory = async_sessionmaker(
     expire_on_commit=False,
 )
 
+
 # Базовый ORM класс
 class Base(DeclarativeBase):
     pass
