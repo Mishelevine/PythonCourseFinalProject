@@ -1,12 +1,42 @@
-from pydantic import BaseModel, ConfigDict, Field
+from typing import Literal
+
+from password_validator import PasswordValidator
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
+
+# Настройки валидации пароля
+password_policy = (
+    PasswordValidator()
+    .min(8)
+    .max(128)
+    .has()
+    .uppercase()
+    .has()
+    .lowercase()
+    .has()
+    .digits()
+    .has()
+    .symbols()
+)
 
 
 # Регистрация пользователя
 class UserRegister(BaseModel):
-    login: str = Field(min_length=3, max_length=40)
-    password: str = Field(min_length=8, max_length=128)
-    displayed_name: str = Field(min_length=1, max_length=100)
+    login: str = Field(min_length=4, max_length=40)
+    password: SecretStr = Field(min_length=8, max_length=128)
+    displayed_name: str | None = Field(
+        default=None, min_length=1, max_length=100
+    )
     about: str | None = Field(default=None, max_length=1000)
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, value: SecretStr) -> SecretStr:
+        if not password_policy.validate(value.get_secret_value()):
+            raise ValueError(
+                "Пароль должен содержать строчную и заглавную буквы, "
+                "цифру и спецсимвол"
+            )
+        return value
 
 
 # Ответ на регистрацию пользователя
@@ -17,3 +47,20 @@ class UserResponse(BaseModel):
     login: str
     displayed_name: str
     about: str | None
+
+
+# Вход пользователя
+class UserLogin(BaseModel):
+    login: str = Field(min_length=1, max_length=40)
+    password: str = Field(min_length=1, max_length=128)
+
+
+# Ответ с Access Token
+class AccessTokenResponse(BaseModel):
+    access_token: str
+    token_type: Literal["bearer"] = "bearer"
+
+
+# Ответ с Access Token + Refresh Token
+class TokenPairResponse(AccessTokenResponse):
+    refresh_token: str

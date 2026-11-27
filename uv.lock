@@ -1016,6 +1016,15 @@ wheels = [
 ]
 
 [[package]]
+name = "password-validator"
+version = "1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/1f/60/3529640092041a8d46e9c88cdcd6d00f212b3e38e398d4c167eec549fc46/password_validator-1.0.tar.gz", hash = "sha256:f12c1036b17c67fab607ad8003f43e73940793d7ab89bc7efcb2cd47c024533b", size = 4247, upload-time = "2020-05-31T16:53:48.288Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b8/14/b65256d9f801d172a815adf003892b034fe6dbadec7b9def4f45309a7a56/password_validator-1.0-py3-none-any.whl", hash = "sha256:4de1758e15b4e9bdf32933fcc99ce89efcdd28566e26e130726bb4295dd0d44c", size = 5723, upload-time = "2020-05-31T16:53:44.439Z" },
+]
+
+[[package]]
 name = "protobuf"
 version = "7.36.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1201,6 +1210,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pyjwt"
+version = "2.15.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/43/ea/5194e52748b0da83d71e082d75496eaec6e58f419f5e184786ded517e6a9/pyjwt-2.15.1.tar.gz", hash = "sha256:4f259e80cdfb6b3fc18a7de51fd1ef9ec79652f25019bae68975ca2468a34df8", size = 121252, upload-time = "2026-09-28T18:40:42.598Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/50/ca/44de4e75f8aadc457f0634be3b542815078ded46dca30efb960edeecad6e/pyjwt-2.15.1-py3-none-any.whl", hash = "sha256:42d59d631f7768a1028a64c7ff581a9bf7519804daf91fc5b6c56e30eec5e193", size = 33860, upload-time = "2026-09-28T18:40:41.429Z" },
+]
+
+[[package]]
 name = "python-dotenv"
 version = "1.2.4"
 source = { registry = "https://pypi.org/simple" }
@@ -1226,7 +1244,9 @@ dependencies = [
     { name = "aiosqlite" },
     { name = "alembic" },
     { name = "fastapi", extra = ["standard"] },
+    { name = "password-validator" },
     { name = "pwdlib", extra = ["argon2"] },
+    { name = "pyjwt" },
     { name = "sqlalchemy", extra = ["asyncio"] },
 ]
 
@@ -1240,7 +1260,9 @@ requires-dist = [
     { name = "aiosqlite", specifier = ">=0.22.1" },
     { name = "alembic", specifier = ">=1.20.1" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.165.0" },
+    { name = "password-validator", specifier = ">=1.0" },
     { name = "pwdlib", extras = ["argon2"], specifier = ">=0.4.2" },
+    { name = "pyjwt", specifier = ">=2.15.1" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.1.9" },
 ]
 
