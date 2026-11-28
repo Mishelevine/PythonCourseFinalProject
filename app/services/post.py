@@ -6,7 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.post import Post, PostStatus
 from app.models.post_category import PostCategory
-from app.schemas.post import PostCreate, PostUpdate
+from app.schemas.post import PostCreate, PostListItem, PostResponse, PostUpdate
+from app.services.post_like import get_post_like_stats
 
 
 class CategoryNotFoundError(Exception):
@@ -65,6 +66,33 @@ async def check_category(
         category = await session.get(PostCategory, category_id)
         if category is None:
             raise CategoryNotFoundError("Category not found")
+
+
+async def get_post_list_response(
+    session: AsyncSession,
+    posts: Sequence[Post],
+    current_user_id: int | None = None,
+) -> list[PostListItem]:
+    stats = await get_post_like_stats(
+        session, [post.id for post in posts], current_user_id
+    )
+    return [
+        PostListItem.model_validate(post).model_copy(
+            update=stats.get(post.id, {})
+        )
+        for post in posts
+    ]
+
+
+async def get_post_response(
+    session: AsyncSession,
+    post: Post,
+    current_user_id: int | None = None,
+) -> PostResponse:
+    stats = await get_post_like_stats(session, [post.id], current_user_id)
+    return PostResponse.model_validate(post).model_copy(
+        update=stats.get(post.id, {})
+    )
 
 
 async def create_post(

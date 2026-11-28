@@ -17,6 +17,8 @@ class PostListItem(BaseModel):
     created_at: datetime
     updated_at: datetime
     published_at: datetime | None
+    likes_count: int = 0
+    is_liked: bool = False
 
 
 # Текст поста

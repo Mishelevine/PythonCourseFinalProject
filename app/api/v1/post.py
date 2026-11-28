@@ -1,11 +1,13 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import (
     get_current_user,
     get_optional_current_user,
+    get_post_by_id,
+    get_readable_post,
     get_session,
 )
 from app.models.post import Post, PostStatus
@@ -15,40 +17,14 @@ from app.services.post import (
     CategoryNotFoundError,
     delete_post,
     get_my_posts,
+    get_post_list_response,
+    get_post_response,
     get_posts,
     update_post,
 )
 from app.services.post import create_post as create_post_db
-from app.services.post import get_post_by_id as get_post_db
 
 router = APIRouter(prefix="/posts", tags=["posts"])
-
-
-# Получить пост по id
-async def get_post_by_id(
-    post_id: Annotated[int, Path(gt=0)],
-    session: Annotated[AsyncSession, Depends(get_session)],
-) -> Post:
-    post = await get_post_db(session, post_id)
-    if post is None:
-        raise HTTPException(status_code=404, detail="Post not found")
-    return post
-
-
-async def get_readable_post(
-    current_user: Annotated[User | None, Depends(get_optional_current_user)],
-    post: Annotated[Post, Depends(get_post_by_id)],
-) -> Post:
-    # Чужие черновики скрываем, администратор может их просматривать
-    if post.status == PostStatus.DRAFT and (
-        current_user is None
-        or (
-            current_user.id != post.user_id
-            and current_user.user_role != UserRole.ADMIN
-        )
-    ):
-        raise HTTPException(status_code=404, detail="Post not found")
-    return post
 
 
 async def get_editable_post(
@@ -81,12 +57,16 @@ async def get_deletable_post(
 )
 async def list_posts(
     session: Annotated[AsyncSession, Depends(get_session)],
+    user: Annotated[User | None, Depends(get_optional_current_user)],
     user_id: Annotated[int | None, Query(gt=0)] = None,
     category_id: Annotated[int | None, Query(gt=0)] = None,
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
 ):
-    return await get_posts(session, offset, limit, user_id, category_id)
+    posts = await get_posts(session, offset, limit, user_id, category_id)
+    return await get_post_list_response(
+        session, posts, user.id if user is not None else None
+    )
 
 
 @router.get(
@@ -101,7 +81,8 @@ async def list_my_posts(
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
 ):
-    return await get_my_posts(session, user.id, offset, limit, status)
+    posts = await get_my_posts(session, user.id, offset, limit, status)
+    return await get_post_list_response(session, posts, user.id)
 
 
 @router.get(
@@ -110,9 +91,13 @@ async def list_my_posts(
     summary="Получение информации о посте",
 )
 async def get_post(
+    session: Annotated[AsyncSession, Depends(get_session)],
+    user: Annotated[User | None, Depends(get_optional_current_user)],
     post: Annotated[Post, Depends(get_readable_post)],
 ):
-    return post
+    return await get_post_response(
+        session, post, user.id if user is not None else None
+    )
 
 
 @router.post(
@@ -139,13 +124,16 @@ async def create_post(
 )
 async def patch_post(
     session: Annotated[AsyncSession, Depends(get_session)],
+    user: Annotated[User, Depends(get_current_user)],
     post: Annotated[Post, Depends(get_editable_post)],
     data: PostUpdate,
 ):
     try:
-        return await update_post(session, post, data)
+        post = await update_post(session, post, data)
     except CategoryNotFoundError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
+
+    return await get_post_response(session, post, user.id)
 
 
 @router.delete(
