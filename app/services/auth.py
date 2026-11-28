@@ -15,7 +15,12 @@ from app.core.security import (
 )
 from app.models.refresh_token import RefreshToken
 from app.models.user import User
-from app.schemas.auth import TokenPairResponse, UserLogin, UserRegister
+from app.schemas.auth import (
+    TokenPairResponse,
+    UserLogin,
+    UserPasswordUpdate,
+    UserRegister,
+)
 
 
 class LoginAlreadyExistsError(Exception):
@@ -23,6 +28,10 @@ class LoginAlreadyExistsError(Exception):
 
 
 class IncorrectLoginOrPassword(Exception):
+    pass
+
+
+class IncorrectCurrentPasswordError(Exception):
     pass
 
 
@@ -98,6 +107,51 @@ async def login_user(session: AsyncSession, data: UserLogin):
         raise IncorrectLoginOrPassword("Incorrect login or password")
 
     return user
+
+
+# Функция для смены пароля
+async def change_user_password(
+    session: AsyncSession,
+    user: User,
+    data: UserPasswordUpdate,
+) -> None:
+    # Проверка текущего пароля
+    password_is_valid = await to_thread(
+        verify_password,
+        data.current_password.get_secret_value(),
+        user.password_hash,
+    )
+
+    if not password_is_valid:
+        raise IncorrectCurrentPasswordError("Incorrect current password")
+
+    # Получение хэша нового пароля
+    password_hash = await to_thread(
+        hash_password,
+        data.new_password.get_secret_value(),
+    )
+
+    now = datetime.now(UTC).replace(tzinfo=None)
+
+    try:
+        user.password_hash = password_hash
+
+        # Отзываем refresh токены пользователя на всех устройствах
+        statement = (
+            update(RefreshToken)
+            .where(
+                RefreshToken.user_id == user.id,
+                RefreshToken.revoked_at.is_(None),
+            )
+            .values(revoked_at=now)
+        )
+
+        await session.execute(statement)
+
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise
 
 
 async def get_tokens(

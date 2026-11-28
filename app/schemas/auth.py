@@ -59,6 +59,23 @@ class UserLogin(BaseModel):
     password: str = Field(min_length=1, max_length=128)
 
 
+class UserPasswordUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    current_password: SecretStr = Field(min_length=1, max_length=128)
+    new_password: SecretStr = Field(min_length=8, max_length=128)
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password(cls, value: SecretStr) -> SecretStr:
+        if not password_policy.validate(value.get_secret_value()):
+            raise ValueError(
+                "Пароль должен содержать строчную и заглавную буквы, "
+                "цифру и спецсимвол"
+            )
+        return value
+
+
 # Ответ с Access Token
 class AccessTokenResponse(BaseModel):
     access_token: str

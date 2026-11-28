@@ -6,18 +6,22 @@ from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.cookies import clear_refresh_cookie, set_refresh_cookie
-from app.api.deps import get_session
+from app.api.deps import get_current_user, get_session
 from app.core.security import create_access_token
+from app.models.user import User
 from app.schemas.auth import (
     AccessTokenResponse,
     UserLogin,
+    UserPasswordUpdate,
     UserRegister,
     UserResponse,
 )
 from app.services.auth import (
+    IncorrectCurrentPasswordError,
     IncorrectLoginOrPassword,
     InvalidRefreshTokenError,
     LoginAlreadyExistsError,
+    change_user_password,
     get_tokens,
     login_user,
     refresh_tokens,
@@ -86,6 +90,31 @@ async def logout(
     if refresh_token is not None:
         await revoke_refresh_token(session, refresh_token)
 
+    clear_refresh_cookie(response)
+
+
+# Смена пароля
+@router.put(
+    "/password",
+    status_code=204,
+    summary="Смена пароля текущего пользователя",
+)
+async def change_password(
+    data: UserPasswordUpdate,
+    response: Response,
+    user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> None:
+    try:
+        await change_user_password(session, user, data)
+    except IncorrectCurrentPasswordError as error:
+        raise HTTPException(
+            status_code=400,
+            detail=str(error),
+        ) from error
+
+    # После смены пароля удаляем куки
+    # с отозванным refresh token
     clear_refresh_cookie(response)
 
 
