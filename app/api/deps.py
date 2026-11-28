@@ -52,3 +52,26 @@ async def get_current_user(
         raise UnauthorizedError()
 
     return user
+
+async def get_current_admin(
+    token: Annotated[str | None, Depends(oauth2_scheme)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> User:
+    if token is None:
+        raise UnauthorizedError()
+
+    try:
+        # Изпользуем полученный из заголовка токен
+        user_id = decode_access_token(token)
+    except (InvalidTokenError, ValueError) as error:
+        raise UnauthorizedError() from error
+
+    user = await session.get(User, user_id)
+
+    if user is None:
+        raise UnauthorizedError()
+
+    if user.user_role != "admin":
+        raise HTTPException(403, "Forbidden")
+
+    return user

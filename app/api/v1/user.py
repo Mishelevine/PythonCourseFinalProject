@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user, get_session
 from app.models.user import User, UserRole
+from app.schemas.auth import UserResponse
 from app.schemas.user import GetUserResponse, UserUpdate
 from app.services.user import (
     delete_user,
@@ -15,7 +16,7 @@ from app.services.user import (
     get_user_by_id as get_user_db,
 )
 
-router = APIRouter(prefix="/user", tags=["user"])
+router = APIRouter(prefix="/users", tags=["users"])
 
 
 # Получить пользователя по id
@@ -50,6 +51,19 @@ async def list_users(
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
 ):
     return await get_users(session, offset, limit)
+
+
+# Получение текущего пользователя по access токену
+@router.get(
+    "/me",
+    summary="Информация о текущем пользователе",
+    description="Работает при помощи access token",
+    response_model=UserResponse,
+)
+async def me(
+    user: Annotated[User, Depends(get_current_user)],
+):
+    return user
 
 
 @router.get(

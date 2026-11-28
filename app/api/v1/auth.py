@@ -6,9 +6,8 @@ from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.cookies import clear_refresh_cookie, set_refresh_cookie
-from app.api.deps import get_current_user, get_session
+from app.api.deps import get_session
 from app.core.security import create_access_token
-from app.models.user import User
 from app.schemas.auth import (
     AccessTokenResponse,
     UserLogin,
@@ -88,19 +87,6 @@ async def logout(
         await revoke_refresh_token(session, refresh_token)
 
     clear_refresh_cookie(response)
-
-
-# Получение текущего пользователя по access токену
-@router.get(
-    "/me",
-    summary="Информация о текущем пользователе",
-    description="Работает при помощи access token",
-    response_model=UserResponse,
-)
-async def me(
-    user: Annotated[User, Depends(get_current_user)],
-):
-    return user
 
 
 # Обновление токенов
