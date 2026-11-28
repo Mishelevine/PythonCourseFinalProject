@@ -1,9 +1,13 @@
 from enum import StrEnum
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Enum, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
+
+if TYPE_CHECKING:
+    from app.models.post import Post
 
 
 # Роли пользователей
@@ -34,4 +38,11 @@ class User(Base):
         ),
         default=UserRole.USER,  # значение по умолчанию в ORM
         server_default=UserRole.USER.value,  # значение по умолчанию в БД
+    )
+
+    # relationships для доступа к связанным объектам в Python
+    posts: Mapped[list["Post"]] = relationship(
+        back_populates="user",
+        cascade="save-update, merge, delete",
+        passive_deletes=True,
     )

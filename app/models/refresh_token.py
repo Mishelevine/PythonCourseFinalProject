@@ -11,11 +11,6 @@ class RefreshToken(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey("user.id", ondelete="CASCADE"),
-        index=True,
-    )
-
     token_hash: Mapped[str] = mapped_column(
         String(64),
         unique=True,
@@ -29,3 +24,9 @@ class RefreshToken(Base):
     used_at: Mapped[datetime | None] = mapped_column(DateTime)
     # Когда токен был отозван пользоавтелем
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+    # foreign keys
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("user.id", ondelete="CASCADE"),
+        index=True,
+    )
