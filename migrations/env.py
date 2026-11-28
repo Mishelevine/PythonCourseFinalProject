@@ -7,7 +7,14 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.db.database import DATABASE_URL, Base
-from app.models import post, post_category, refresh_token, user  # noqa: F401
+from app.models import (  # noqa: F401
+    post,
+    post_category,
+    post_comment,
+    post_likes,
+    refresh_token,
+    user,
+)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

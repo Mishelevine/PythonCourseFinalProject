@@ -65,7 +65,8 @@ async def get_optional_current_user(
     return await get_current_user(token, session)
 
 
-# Функция для проверки роли администратора у текущего пользователя по access токену
+# Функция для проверки роли администратора 
+# у текущего пользователя по access токену
 async def get_current_admin(
     token: Annotated[str | None, Depends(oauth2_scheme)],
     session: Annotated[AsyncSession, Depends(get_session)],

@@ -8,8 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 
 if TYPE_CHECKING:
-    from app.models.post_category import PostCategory
-    from app.models.user import User
+    from app.models import PostCategory, PostComment, PostLike, User
 
 
 # Статусы постов
@@ -67,4 +66,16 @@ class Post(Base):
     )
     category: Mapped["PostCategory | None"] = relationship(
         back_populates="posts",
+    )
+
+    comments: Mapped[list["PostComment"]] = relationship(
+        back_populates="post",
+        cascade="save-update, merge, delete",
+        passive_deletes=True,
+    )
+
+    likes: Mapped[list["PostLike"]] = relationship(
+        back_populates="post",
+        cascade="save-update, merge, delete",
+        passive_deletes=True,
     )
