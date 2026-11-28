@@ -7,6 +7,8 @@ class GetUserResponse(BaseModel):
 
     id: int
     login: str
+    first_name: str | None
+    last_name: str | None
     displayed_name: str
     about: str | None
 
@@ -16,6 +18,8 @@ class UserUpdate(BaseModel):
     # Запрещаем передавать поля, не объявленные в схеме
     model_config = ConfigDict(extra="forbid")
 
+    first_name: str | None = Field(default=None, min_length=1, max_length=100)
+    last_name: str | None = Field(default=None, min_length=1, max_length=100)
     displayed_name: str | None = Field(
         default=None, min_length=1, max_length=100
     )

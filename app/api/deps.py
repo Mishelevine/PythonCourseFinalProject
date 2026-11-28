@@ -77,6 +77,7 @@ async def get_post_by_id(
         raise HTTPException(status_code=404, detail="Post not found")
     return post
 
+
 # Функция для получения информации о посте с проыеркой доступа
 async def get_readable_post(
     current_user: Annotated[User | None, Depends(get_optional_current_user)],

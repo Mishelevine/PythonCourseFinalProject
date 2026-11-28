@@ -23,10 +23,12 @@ password_policy = (
 class UserRegister(BaseModel):
     login: str = Field(min_length=4, max_length=40)
     password: SecretStr = Field(min_length=8, max_length=128)
+    about: str | None = Field(default=None, max_length=1000)
+    first_name: str | None = Field(default=None, min_length=1, max_length=100)
+    last_name: str | None = Field(default=None, min_length=1, max_length=100)
     displayed_name: str | None = Field(
         default=None, min_length=1, max_length=100
     )
-    about: str | None = Field(default=None, max_length=1000)
 
     @field_validator("password")
     @classmethod
@@ -45,6 +47,8 @@ class UserResponse(BaseModel):
 
     id: int
     login: str
+    first_name: str | None
+    last_name: str | None
     displayed_name: str
     about: str | None
 

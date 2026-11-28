@@ -124,7 +124,7 @@ async def refresh(
     )
 
 
-# Запрос для получения Access токена из формы 
+# Запрос для получения Access токена из формы
 # в SwaggerUI c OAuth2PasswordRequestForm
 @router.post(
     "/token",

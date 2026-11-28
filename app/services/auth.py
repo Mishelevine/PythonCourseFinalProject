@@ -55,6 +55,8 @@ async def register_user(
     user = User(
         login=data.login,
         password_hash=password_hash,
+        first_name=data.first_name,
+        last_name=data.last_name,
         displayed_name=data.displayed_name,
         about=data.about,
     )
@@ -63,7 +65,7 @@ async def register_user(
 
     try:
         await session.commit()
-    # Обработка ситуации когда два пользователя 
+    # Обработка ситуации когда два пользователя
     # паытаются одновременно зарегистрировать один логин
     except IntegrityError as error:
         await session.rollback()
@@ -134,7 +136,7 @@ async def refresh_tokens(
     now = datetime.now(UTC).replace(tzinfo=None)
 
     try:
-        # выставляем значение used_at для найденного 
+        # выставляем значение used_at для найденного
         # refrash_token и возвращаем id пользователя
         statement = (
             update(RefreshToken)

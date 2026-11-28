@@ -25,6 +25,9 @@ class User(Base):
     login: Mapped[str] = mapped_column(String, unique=True)
     password_hash: Mapped[str] = mapped_column(String)
 
+    first_name: Mapped[str | None] = mapped_column(String)
+    last_name: Mapped[str | None] = mapped_column(String)
+
     displayed_name: Mapped[str] = mapped_column(String)
     about: Mapped[str | None] = mapped_column(String)
 
