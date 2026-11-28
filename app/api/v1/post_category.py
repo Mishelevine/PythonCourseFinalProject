@@ -64,7 +64,7 @@ async def get_post_category(
     "",
     status_code=201,
     response_model=GetPostCategoryResponse,
-    dependencies=[Depends(get_current_admin)],
+    dependencies=[Depends(get_current_admin)],  # Только для администратора
     summary="Создание категории постов",
 )
 async def create_post_category(
@@ -80,7 +80,7 @@ async def create_post_category(
 @router.patch(
     "/{post_category_id}",
     response_model=GetPostCategoryResponse,
-    dependencies=[Depends(get_current_admin)],
+    dependencies=[Depends(get_current_admin)],  # Только для администратора
     summary="Обновление категории постов",
 )
 async def patch_post_category(
@@ -98,7 +98,7 @@ async def patch_post_category(
 @router.delete(
     "/{post_category_id}",
     status_code=204,
-    dependencies=[Depends(get_current_admin)],
+    dependencies=[Depends(get_current_admin)],  # Только для администратора
     summary="Удаление категории постов",
 )
 async def remove_post_category(

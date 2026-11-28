@@ -53,6 +53,19 @@ async def get_current_user(
 
     return user
 
+
+# Без токена возвращаем None чтобы неавторизованные
+# пользовтели также могли читать статьи, комментарии и так далее
+async def get_optional_current_user(
+    token: Annotated[str | None, Depends(oauth2_scheme)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> User | None:
+    if token is None:
+        return None
+    return await get_current_user(token, session)
+
+
+# Функция для проверки роли администратора у текущего пользователя по access токену
 async def get_current_admin(
     token: Annotated[str | None, Depends(oauth2_scheme)],
     session: Annotated[AsyncSession, Depends(get_session)],

@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, String, Text
+from sqlalchemy import DateTime, Enum, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from app.models.user import User
 
 
-# Роли пользователей
+# Статусы постов
 class PostStatus(StrEnum):
     PUBLISHED = "published"
     DRAFT = "draft"
@@ -24,6 +24,20 @@ class Post(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String)
     content_text: Mapped[str] = mapped_column(Text)
+
+    status: Mapped[PostStatus] = mapped_column(
+        Enum(
+            PostStatus,
+            values_callable=lambda statuses: [
+                status.value for status in statuses
+            ],
+            create_constraint=True,
+            name="post_status",
+        ),
+        default=PostStatus.DRAFT,
+        server_default=PostStatus.DRAFT.value,
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=lambda: datetime.now(UTC).replace(tzinfo=None),
